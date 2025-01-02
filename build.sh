@@ -32,7 +32,8 @@ if ! hash ${MANIFEST_TOOL} &> /dev/null; then
 # -----------------------------------------------------------------------------
 
 while [[ $# -gt 0 ]]; do
-  if [[ "${1,,}" == "--push" ]]; then
+  arg=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+  if [[ "$arg" == "--push" ]]; then
     PUSH=1
   else
     TARGETS+=( "$1" )
@@ -64,18 +65,18 @@ export VARIANT
 # Ask for confirmation if pushing
 # -----------------------------------------------------------------------------
 
-if [[ ${PUSH} -eq 1 ]]; then
-
-  # Ask confirmation if pushing to a registry
-  echo "Pushing image into ${REGISTRY}"
-  echo "Tags: ${MAJOR}, ${VERSION}, ${TAG}, latest"
-  read -r -p "Are you sure? [y/N] " RESPONSE
-  if [[ ! "${RESPONSE}" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-    echo "Cancelled"
-    exit 1
-  fi
-
-fi
+#if [[ ${PUSH} -eq 1 ]]; then
+#
+#  # Ask confirmation if pushing to a registry
+#  echo "Pushing image into ${REGISTRY}"
+#  echo "Tags: ${MAJOR}, ${VERSION}, ${TAG}, latest"
+#  read -r -p "Are you sure? [y/N] " RESPONSE
+#  if [[ ! "${RESPONSE}" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+#    echo "Cancelled"
+#    exit 1
+#  fi
+#
+#fi
 
 # -----------------------------------------------------------------------------
 # Building

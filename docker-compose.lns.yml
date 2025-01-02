@@ -1,32 +1,31 @@
 services:
   basicstation:
-    image: xoseperez/basicstation:latest
+    image: ssenchyn/basicstation:aarch64-latest
     container_name: basicstation
     restart: unless-stopped
     privileged: true
     network_mode: host
 
-    secrets:
-      - tc.uri
-      - tc.trust
-      - tc.crt
-      - tc.key
-
     volumes:
-      - ./config:/app/config
+      - config:/app/config
 
     environment:
-      MODEL: "SX1301"
+      MODEL: "REWAN1012"
       GW_POWER_EN_GPIO: "GPIO119"
       GW_RESET_GPIO: "GPIO122"
       GW_POWER_EN_LOGIC: 0
+      CS_KEY: ${CS_KEY}
+      TC_URI: ${TC_URI}
 
-secrets:
- tc.uri:
-   file: tc.uri
- tc.trust:
-   file: tc.trust
- tc.crt:
-   file: tc.crt
- tc.key:
-   file: tc.key
+volumes:
+  config:
+
+#secrets:
+#  tc.uri:
+#    file: tc.uri
+#  tc.trust:
+#    file: tc.trust
+#  tc.crt:
+#    file: tc.crt
+#  tc.key:
+#    file: tc.key

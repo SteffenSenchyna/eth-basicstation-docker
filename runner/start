@@ -6,10 +6,11 @@ VERSION=2.8.4
 # Colors
 # -----------------------------------------------------------------------------
 
-COLOR_INFO="\e[32m" # green
-COLOR_WARNING="\e[33m" # yellow
-COLOR_ERROR="\e[31m" # red
-COLOR_END="\e[0m"
+COLOR_INFO="\033[32m" # green
+COLOR_WARNING="\033[33m" # yellow
+COLOR_ERROR="\033[31m" # red
+COLOR_END="\033[0m"
+
 
 # -----------------------------------------------------------------------------
 # Load Balena specific methods
@@ -145,6 +146,66 @@ function create_network_link {
 
 }
 
+function cs_autoprovision() {
+  local RAW
+  local HTTP_STATUS
+
+#   # Check if GATEWAY_EUI is set
+#   if [[ -z "${GATEWAY_EUI}" ]]; then
+#     get_gateway_eui
+#   fi
+
+  # Fetch gateway information
+  HTTP_STATUS=$(curl -s -o gateway.json -w "%{http_code}" \
+    --header 'Accept: application/json' \
+    --header 'Authorization: Bearer '"${CS_KEY}"'' \
+    --header 'Content-Type: application/json' \
+    --request GET \
+    "http://${API_URI}/api/gateways/${GATEWAY_EUI}" 2>/dev/null)
+
+  RAW=$(cat gateway.json)
+  rm gateway.json
+  # Check HTTP status for GET request
+  if [[ "$HTTP_STATUS" -eq 200 ]]; then
+    echo -e "${COLOR_INFO}Chirpstack: Gateway exists, getting certificates${COLOR_END}"
+
+    # Generate certificate
+    HTTP_STATUS=$(curl -s -o cert.json -w "%{http_code}" \
+      --header 'Accept: application/json' \
+      --header 'Authorization: Bearer '"${CS_KEY}"'' \
+      --header 'Content-Type: application/json' \
+      --request POST \
+      "http://${API_URI}/api/gateways/${GATEWAY_EUI}/generate-certificate" 2>/dev/null)
+
+    RAW=$(cat cert.json)
+    rm cert.json
+    if [[ "$HTTP_STATUS" -eq 200 ]]; then
+        TC_CERT=$(echo "$RAW" | jq -r '.tlsCert' 2>/dev/null)
+        TC_KEY=$(echo "$RAW" | jq -r '.tlsKey' 2>/dev/null)
+        TC_TRUST=$(echo "$RAW" | jq -r '.caCert' 2>/dev/null)
+    if [[ -n "$TC_CERT" && -n "$TC_KEY" && -n "$TC_TRUST" ]]; then
+        echo "${TC_CERT}" > tc.crt
+        echo "${TC_KEY}" > tc.key
+        echo "${TC_TRUST}" > tc.trust
+        echo -e "${COLOR_INFO}Chirpstack: Certificates successfully generated${COLOR_END}"
+    else
+        echo -e "${COLOR_ERROR}Chirpstack: Invalid certificate response${COLOR_END}\n"
+        idle
+    fi
+    else
+        # Certificate generation failed
+        MESSAGE=$(echo "$RAW" | jq -r '.message // "Unknown error"' 2>/dev/null)
+        echo -e "${COLOR_ERROR}ERROR: $MESSAGE (HTTP $HTTP_STATUS)${COLOR_END}\n"
+        idle
+    fi
+  else
+    # Gateway does not exist or another error occurred
+    MESSAGE=$(echo "$RAW" | jq -r '.message // "Unknown error"' 2>/dev/null)
+    echo -e "${COLOR_ERROR}ERROR: $MESSAGE (HTTP $HTTP_STATUS)${COLOR_END}\n"
+    return
+  fi
+}
+
 function tts_autoprovision() {
 
     # Autoprovision variables needed
@@ -152,7 +213,7 @@ function tts_autoprovision() {
     GATEWAY_PREFIX=${GATEWAY_PREFIX:-"eui"}
     GATEWAY_ID=${GATEWAY_ID:-"${GATEWAY_PREFIX,,}-${GATEWAY_EUI,,}"}
     GATEWAY_NAME=${GATEWAY_NAME:-${GATEWAY_ID}}
-    
+
     # Autoprovision regions defined here: https://www.thethingsindustries.com/docs/reference/frequency-plans/
     TTS_FREQUENCY_PLAN_ID=${TTS_FREQUENCY_PLAN_ID:-""}
     if [[ "$TTS_FREQUENCY_PLAN_ID" == "" ]]; then
@@ -187,17 +248,17 @@ function tts_autoprovision() {
             }
         }' \
         'https://'"${SERVER}"'/api/v3/users/'"${TTS_USERNAME}"'/gateways' 2>/dev/null)
-    
+
     CODE=$( echo "${RAW}" | jq --raw-output '.code' 2>/dev/null )
     MESSAGE=$( echo "${RAW}" | jq --raw-output '.message' 2>/dev/null )
 
-    # ToDo: find more error codes when provision a gateway via API.   
+    # ToDo: find more error codes when provision a gateway via API.
     if [[ "$CODE" == "null" ]]; then
-        echo -e "${COLOR_INFO}Gateway autoprovisioned successfully!${COLOR_END}"
+        echo -e "${COLOR_INFO}Gateway auto provisioned successfully!${COLOR_END}"
     elif [[ "$CODE" == 6 ]] || [[ "$CODE" == 9 ]]; then
-        echo -e "${COLOR_WARNING}WARNING: The gateway was already provisioned.${COLOR_END}"
+        echo -e "${COLOR_WARNING}WARNING: The gateway was already provisioned${COLOR_END}"
     else
-        echo -e "${COLOR_ERROR}ERROR: Autoprovisioning error $MESSAGE ($CODE).${COLOR_END}\n"
+        echo -e "${COLOR_ERROR}ERROR: Autoprovisioning error $MESSAGE ($CODE)${COLOR_END}\n"
         return
     fi
 
@@ -209,7 +270,7 @@ function tts_autoprovision() {
         --header 'Content-Type: application/json' \
         --request GET \
         'https://'"${SERVER}"'/api/v3/gateways/'"${GATEWAY_ID}"'/api-keys' | jq '.api_keys[] | select(.name == "'"${API_KEY_NAME}"'") | .id' 2>/dev/null)
-    
+
     # Delete previous API keys
     for ID in $IDS; do
         curl -s --location \
@@ -253,11 +314,11 @@ function tts_autoprovision() {
 }
 
 function clean_certs_keys() {
-    
+
     local CONTENT=$1
 
     if [[ "$CONTENT" == *-----* ]]; then
-    
+
         CONTENT=${CONTENT//-----/-}
         readarray -d '-' -t PARTS <<< "$CONTENT"
         local HEADER=${PARTS[1]}
@@ -267,13 +328,12 @@ function clean_certs_keys() {
         echo -e "-----$HEADER-----\n$KEY\n-----$FOOTER-----"
 
     else
-        
-        echo "$CONTENT"
-    
-    fi
-        
-}
 
+        echo "$CONTENT"
+
+    fi
+
+}
 # -----------------------------------------------------------------------------
 # Preparing configuration
 # -----------------------------------------------------------------------------
@@ -307,7 +367,7 @@ CONFIG_FILE=./station.conf
 # Server configuration
 # -----------------------------------------------------------------------------
 
-# Defaults to TTN server v3, `eu1` region, 
+# Defaults to TTN server v3, `eu1` region,
 # use a custom SERVER, CUPS_URI or TC_URI to change this.
 # If TTS_TENANT is defined different than "ttn", it will be used to build the
 # tenant URL under thethings.industries, otherwise only the region will be used
@@ -321,8 +381,8 @@ if [[ "$TTS_TENANT" == "ttn" ]]; then
 else
     SERVER=${SERVER:-"${TTS_TENANT}.${TTS_REGION}.cloud.thethings.industries"}
 fi
-CUPS_URI=${CUPS_URI:-"https://${SERVER}:443"} 
-TC_URI=${TC_URI:-"wss://${SERVER}:8887"} 
+CUPS_URI=${CUPS_URI:-"https://${SERVER}:443"}
+TC_URI=${TC_URI:-"wss://${SERVER}:8887"}
 
 # -----------------------------------------------------------------------------
 # Mode (static/dynamic) & protocol (cups/lns)
@@ -334,7 +394,7 @@ USE_CUPS=${USE_CUPS:-2} # undefined by default
 PROTOCOL=""
 
 # Configuration mode
-if [[ -f ${CONFIG_FILE} ]]; then 
+if [[ -f ${CONFIG_FILE} ]]; then
     MODE="STATIC"
     if [[ $USE_CUPS -eq 1 ]]; then
         PROTOCOL="CUPS"
@@ -345,9 +405,11 @@ if [[ -f ${CONFIG_FILE} ]]; then
         PROTOCOL="LNS"
     elif [[ -n "${TTS_PERSONAL_KEY}" ]] && [[ -n "${TTS_USERNAME}" ]]; then
         tts_autoprovision
-        if [[ -n "${TC_KEY}" ]]; then 
+        if [[ -n "${TC_KEY}" ]]; then
             PROTOCOL="LNS"
         fi
+    elif [[ -n "${CS_KEY}" ]] || [[ -n "${TC_KEY}" ]]; then
+            PROTOCOL="LNS"
     fi
     if [[ -z "${PROTOCOL}" ]]; then
         echo -e "${COLOR_ERROR}ERROR: Custom configuration folder found, but missing files: either force key-less CUPS with USE_CUPS=1 or provide a valid cups.key or tc.key files or TTS_PERSONAL_KEY and TTS_USERNAME variable${COLOR_END}"
@@ -360,16 +422,18 @@ else
     elif [[ -n "${CUPS_KEY}" ]] && [[ ${USE_CUPS} -ne 0 ]]; then
         PROTOCOL="CUPS"
         echo -e "${COLOR_WARNING}WARNING: USE_CUPS variable will be mandatory in future versions to enable CUPS${COLOR_END}"
-    elif [[ -n "${TC_KEY}" ]]; then 
+    elif [[ -n "${TC_KEY}" ]]; then
         PROTOCOL="LNS"
     elif [[ -n "${TTS_PERSONAL_KEY}" ]] && [[ -n "${TTS_USERNAME}" ]]; then
         tts_autoprovision
-        if [[ -n "${TC_KEY}" ]]; then 
+        if [[ -n "${TC_KEY}" ]]; then
             PROTOCOL="LNS"
         fi
+    elif [[ -n "${CS_KEY}" ]] || [[ -n "${TC_KEY}" ]]; then
+            PROTOCOL="LNS"
     fi
     if [[ -z "${PROTOCOL}" ]]; then
-        echo -e "${COLOR_ERROR}ERROR: Missing configuration, either force key-less CUPS with USE_CUPS=1 or define valid TC_KEY, CUPS_KEY or TTS_PERSONAL_KEY and TTS_USERNAME${COLOR_END}"
+        echo -e "${COLOR_ERROR}ERROR: Missing configuration, either force key-less CUPS with USE_CUPS=1 or define valid TC_KEY, CUPS_KEY, CS_KEY or TTS_PERSONAL_KEY and TTS_USERNAME${COLOR_END}"
         idle
     fi
 fi
@@ -405,28 +469,28 @@ fi
 
 # If no MODEL defined we try to find the concentrator
 if [[ -z "${MODEL}" ]] || [[ "${MODEL}" == "AUTO" ]]; then
-    
+
     unset MODEL
 
-    create_reset_file 
+    create_reset_file
     discover_concentrator "${INTERFACE:-AUTO}" "${DESIGN:-AUTO}" "${RADIO_NUM:-1}"
     if [[ $? -ne 0 ]]; then
-        
+
         DESIGN=${RESPONSE[0]}
         DEVICE=${RESPONSE[1]}
         CHIP_ID=${RESPONSE[2]}
-        
+
         [[ "${DEVICE}" == *"spi"*    ]] && INTERFACE="SPI" || INTERFACE="USB"
         [[ "${DESIGN}" == "corecell" ]] && MODEL="SX1302"
         [[ "${DESIGN}" == "picocell" ]] && MODEL="SX1308"
 
     else
-    
+
         echo -e "${COLOR_ERROR}ERROR: MODEL variable not set and we couldn't find any concentrator!${COLOR_END}"
 	    idle
 
     fi
-    
+
 fi
 
 # -----------------------------------------------------------------------------
@@ -444,23 +508,23 @@ declare -A MODEL_MAP=(
 
     # SX1301
     [SX1301]=SX1301
-    [RAK7243]=SX1301 [RAK7243C]=SX1301 [RAK7244]=SX1301 [RAK7244C]=SX1301 [RAK831]=SX1301 [RAK833]=SX1301 [RAK2245]=SX1301 [RAK2247]=SX1301 
-    [IC880A]=SX1301 [PG1301]=SX1301
-    
+    [RAK7243]=SX1301 [RAK7243C]=SX1301 [RAK7244]=SX1301 [RAK7244C]=SX1301 [RAK831]=SX1301 [RAK833]=SX1301 [RAK2245]=SX1301 [RAK2247]=SX1301
+    [IC880A]=SX1301 [PG1301]=SX1301 [REWAN1012]=SX1301
+
     # SX1302
     [SX1302]=SX1302
     [RAK7248]=SX1302 [RAK7248C]=SX1302 [RAK7271]=SX1302 [RAK2287]=SX1302
     [WM1302]=SX1302 [PG1302]=SX1302
-    
+
     # SX1303
     [SX1303]=SX1303
-    [RAK5146]=SX1303 [RAK5166]=SX1303 [RAK5167]=SX1303 [RAK7371]=SX1303 
-     
+    [RAK5146]=SX1303 [RAK5166]=SX1303 [RAK5167]=SX1303 [RAK7371]=SX1303
+
     # SX1308
     [SX1308]=SX1308
     [RAK7246]=SX1308 [RAK7246G]=SX1308 [RAK2246]=SX1308
     [R11E-LR8]=SX1308 [R11E-LR9]=SX1308 [R11E-LORA8]=SX1308 [R11E-LORA9]=SX1308
-    
+
 )
 
 CONCENTRATOR=${MODEL_MAP[$MODEL]}
@@ -540,23 +604,16 @@ create_reset_file
 # -----------------------------------------------------------------------------
 
 if [[ -z "${DEVICE}" ]] || [[ "${DEVICE}" == "AUTO" ]]; then
-
     unset DEVICE
-
     # Look for concentrator
     discover_concentrator "${INTERFACE:-AUTO}" "${DESIGN:-AUTO}" "${RADIO_NUM:-1}"
     if [[ $? -ne 0 ]]; then
-
         DESIGN=${RESPONSE[0]}
         DEVICE=${RESPONSE[1]}
         CHIP_ID=${RESPONSE[2]}
-
     else
-
         echo -e "${COLOR_WARNING}ERROR: DEVICE set to auto discover but no concentrator found! (INTERFACE set to $INTERFACE) ${COLOR_END}"
-
     fi
-
 fi
 
 # -----------------------------------------------------------------------------
@@ -612,7 +669,7 @@ if [[ "$GATEWAY_EUI_SOURCE" == "chip" ]]; then
 
     # Check if it's already cached
     if [[ -n "${CHIP_ID}" ]]; then
-        GATEWAY_EUI=${CHIP_ID}    
+        GATEWAY_EUI=${CHIP_ID}
     else
         chip_id "$DESIGN" "$DEVICE"
         if [[ $? -eq 1 ]]; then
@@ -641,7 +698,7 @@ if [[ -z "${GATEWAY_EUI}" ]]; then
     if [[ -z $GATEWAY_EUI_SOURCE ]]; then
         GATEWAY_EUI_SOURCE=$( tail -n+3 < /proc/net/dev | sort -k2 -nr | head -n1 | cut -d ":" -f1 | sed 's/ //g' )
     fi
-    
+
     # Get the Gateway EUI from the source
     if [[ -n $GATEWAY_EUI_SOURCE ]]; then
         GATEWAY_EUI=$( ip link show "$GATEWAY_EUI_SOURCE" | awk '/ether/ {print $2}' | awk -F: '{print $1$2$3"FFFE"$4$5$6}' )
@@ -656,8 +713,29 @@ GATEWAY_EUI=${GATEWAY_EUI^^}
 
 # Check we have an EUI
 if [[ -z ${GATEWAY_EUI} ]] ; then
-    echo -e "${COLOR_ERROR}ERROR: GATEWAY_EUI not set.${COLOR_END}"
+    echo -e "${COLOR_ERROR}ERROR: GATEWAY_EUI not set${COLOR_END}"
 	idle
+fi
+
+
+# -----------------------------------------------------------------------------
+# Update Router ID in Config File if Static Config Exists
+# -----------------------------------------------------------------------------
+
+if [[ -f "${CONFIG_FILE}" ]]; then
+    # echo -e "${COLOR_INFO}Static configuration file found: ${CONFIG_FILE}${COLOR_END}"
+    # echo -e "${COLOR_INFO}Setting routerid to GATEWAY_EUI ${GATEWAY_EUI}${COLOR_END}"
+
+    # Update the routerid in the JSON config file
+    sed -i "s/\"routerid\": \".*\"/\"routerid\": \"${GATEWAY_EUI}\"/" "$CONFIG_FILE"
+
+    # Verify the change
+    if ! grep -q "\"routerid\": \"${GATEWAY_EUI}\"" "$CONFIG_FILE"; then
+        echo -e "${COLOR_ERROR}ERROR: Failed to update routerid in ${CONFIG_FILE}${COLOR_END}"
+        exit 1
+    fi
+else
+    echo -e "${COLOR_WARNING}No static configuration file found (${CONFIG_FILE}). Skipping routerid update.${COLOR_END}"
 fi
 
 # -----------------------------------------------------------------------------
@@ -680,7 +758,7 @@ fi
 if [[ -z "$GPS_DEV" ]] || [[ ! -e $GPS_DEV ]]; then
     HAS_GPS=0
 else
-    HAS_GPS=${HAS_GPS:-1} 
+    HAS_GPS=${HAS_GPS:-1}
 fi
 [[ $HAS_GPS -eq 0 ]] && GPS_DEV="" # allows to disable GPS in models with GPS
 
@@ -781,13 +859,13 @@ echo -e ""
 
 # Link the corresponding configuration file
 if [[ ! -f "${CONFIG_FILE}" ]]; then
-    
+
     cp "/app/station.${DESIGN}.conf" "${CONFIG_FILE}"
-    
+
     sed -i "s#\"device\":\s*.*,#\"device\": \"${INTERFACE,,}:${DEVICE}\",#" "${CONFIG_FILE}"
     sed -i "s#\"routerid\":\s*.*,#\"routerid\": \"${GATEWAY_EUI}\",#" "${CONFIG_FILE}"
     sed -i "s#\"clksrc\":\s*.*,#\"clksrc\": ${CLKSRC:-0},#" "${CONFIG_FILE}"
-    
+
     if [[ ${HAS_GPS} -eq 1 ]]; then
     sed -i "s#\"gps\":\s*.*,#\"gps\": \"${GPS_DEV:-""}\",#" "${CONFIG_FILE}"
     sed -i "s#\"pps\":\s*false,#\"pps\": true,#" "${CONFIG_FILE}"
@@ -809,7 +887,7 @@ if [[ ! -f "${CONFIG_FILE}" ]]; then
     if [[ -n "${WHITELIST_OUIS}" ]]; then
         sed -i "s#\"whitelist_ouis\":\s*.*,#\"whitelist_ouis\": [\"${WHITELIST_OUIS// /\",\"}\"],#" "${CONFIG_FILE}"
     fi
-    
+
 fi
 
 # If stdn variant (or any *n variant) we need at least one slave concentrator
@@ -819,23 +897,23 @@ fi
 
 # CUPS protocol
 if [[ "${PROTOCOL}" == "CUPS" ]]; then
-    if [[ ! -f ./cups.uri ]]; then 
+    if [[ ! -f ./cups.uri ]]; then
         echo "${CUPS_URI}" > cups.uri
     fi
-    if [[ ! -f ./cups.trust ]]; then 
+    if [[ ! -f ./cups.trust ]]; then
         if [[ -z "${CUPS_TRUST}" ]]; then
             cp /app/cacert.pem cups.trust
         else
             clean_certs_keys "${CUPS_TRUST}" > cups.trust
         fi
     fi
-    if [[ ! -f ./cups.crt ]]; then 
+    if [[ ! -f ./cups.crt ]]; then
         if [[ -n "${CUPS_CRT}" ]]; then
             clean_certs_keys "${CUPS_CRT}" > cups.crt
         fi
     fi
-    if [[ ! -f ./cups.key ]]; then 
-        if [[ ! -f ./cups.crt ]]; then 
+    if [[ ! -f ./cups.key ]]; then
+        if [[ ! -f ./cups.crt ]]; then
 	        echo "Authorization: Bearer ${CUPS_KEY}" | perl -p -e 's/\r\n|\n|\r/\r\n/g'  > cups.key
         else
             clean_certs_keys "$CUPS_KEY" > cups.key
@@ -843,31 +921,83 @@ if [[ "${PROTOCOL}" == "CUPS" ]]; then
     fi
 fi
 
-# LNS protocol
+# LNS Protocol
 if [[ "$PROTOCOL" == "LNS" ]]; then
-    if [[ ! -f ./tc.uri ]]; then 
+    # Check if we need to autoprovision using CS_KEY
+    if [[ -n "${CS_KEY}" ]]; then
+        # Only call autoprovision if tc.crt does not exist or is about to expire
+        if [[ ! -f ./tc.crt || $(openssl x509 -checkend 2592000 -noout -in ./tc.crt 2>/dev/null || echo "expired") == "expired" ]]; then
+            cs_autoprovision
+        fi
+    fi
+
+    # Create tc.uri if it doesn't exist
+    if [[ ! -f ./tc.uri ]]; then
         echo "$TC_URI" > tc.uri
     fi
-    if [[ ! -f ./tc.trust ]]; then 
+
+    # Handle tc.trust (Root CA certificate)
+    if [[ ! -f ./tc.trust ]]; then
         if [[ -z "$TC_TRUST" ]]; then
             cp /app/cacert.pem tc.trust
         else
             clean_certs_keys "$TC_TRUST" > tc.trust
         fi
     fi
-    if [[ ! -f ./tc.crt ]]; then 
+
+    # Handle tc.crt (Client certificate)
+    if [[ ! -f ./tc.crt ]]; then
         if [[ -n "$TC_CRT" ]]; then
             clean_certs_keys "$TC_CRT" > tc.crt
         fi
     fi
-    if [[ ! -f ./tc.key ]]; then 
+
+    # Handle tc.key (Private key)
+    if [[ ! -f ./tc.key ]]; then
         if [[ ! -f ./tc.crt ]]; then
-        	echo "Authorization: Bearer $TC_KEY" | perl -p -e 's/\r\n|\n|\r/\r\n/g'  > tc.key
+            echo "Authorization: Bearer $TC_KEY" | perl -p -e 's/\r\n|\n|\r/\r\n/g' > tc.key
         else
             clean_certs_keys "$TC_KEY" > tc.key
         fi
     fi
 fi
+
+
+# -----------------------------------------------------------------------------
+# [OPTIONAL] DNS check for TC_URI
+# -----------------------------------------------------------------------------
+
+MAX_RETRIES=5
+SLEEP_SECONDS=5
+
+# 1. Strip off wss://
+CHECK_URL="$(echo "$TC_URI" | sed -E 's@^wss://@@')"
+
+# 2. Extract only the hostname portion (strip :port /path etc.)
+CHECK_HOST="$(echo "$CHECK_URL" | sed -E 's@:.*@@; s@/.*@@')"
+
+if [ -z "$CHECK_HOST" ]; then
+  echo -e "${COLOR_WARNING}WARNING: Could not parse a hostname from: ${TC_URI}${COLOR_END}"
+else
+  for (( i=1; i<=MAX_RETRIES; i++ )); do
+      echo -e "${COLOR_INFO}Attempt $i/$MAX_RETRIES: Checking DNS resolution for '$CHECK_HOST'...${COLOR_END}"
+
+      if getent hosts "$CHECK_HOST" >/dev/null 2>&1; then
+            echo -e "${COLOR_INFO}DNS OK for $CHECK_HOST\nStarting Basic Station${COLOR_END}"
+          break
+      fi
+
+      echo -e "${COLOR_WARNING}DNS not ready yet. Sleeping $SLEEP_SECONDS seconds...${COLOR_END}"
+      sleep $SLEEP_SECONDS
+  done
+
+  # Final DNS check
+  if ! getent hosts "$CHECK_HOST" >/dev/null 2>&1; then
+      echo -e "${COLOR_ERROR}ERROR: DNS for $CHECK_HOST not resolved after $MAX_RETRIES attempts${COLOR_END}"
+      exit 1
+  fi
+fi
+
 
 # -----------------------------------------------------------------------------
 # Start packet forwarder

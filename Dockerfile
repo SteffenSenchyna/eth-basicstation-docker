@@ -50,12 +50,13 @@ RUN install_packages jq vim gpiod socat
 # Switch to working directory for our app
 WORKDIR /app
 
-# Copy fles from builder and repo
+# Copy files from builder and repo
 RUN mkdir ./artifacts
 COPY --from=builder /app/basicstation/build-rpi-${VARIANT}/bin ./artifacts/v2
 COPY --from=builder /app/basicstation/build-corecell-${VARIANT}/bin ./artifacts/corecell
 COPY --from=builder /app/basicstation/build-linuxpico-${VARIANT}/bin ./artifacts/picocell
 COPY runner/* ./
+COPY config ./config
 RUN chmod +x start gateway_eui find_concentrator
 
 # Add application folder to path
