@@ -1,7 +1,7 @@
 variable "TAG" { default = "" }
 variable "VERSION" { default = "" }
 variable "BUILD_DATE" { default = "" }
-variable "REGISTRY" { default = "docker.io/ssenchyn/basicstation" }
+variable "REGISTRY" { default = "ssenchyn/basicstation" }
 variable "REMOTE_TAG" { default = "v2.0.6" }
 variable "VARIANT" { default = "stdn" }
 
@@ -23,7 +23,7 @@ target "armv7hf" {
 }
 
 target "aarch64" {
-  tags = ["${REGISTRY}:latest"]
+  tags = ["${REGISTRY}:aarch64-latest"]
   args = {
     "ARCH"       = "aarch64",
     "REMOTE_TAG" = "${REMOTE_TAG}",

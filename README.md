@@ -7,33 +7,33 @@ or SX1308 LoRa concentrators (e.g. RAK831, RAK833, RAK2245, RAK2246, RAK2247, RA
 
 - [Introduction](#introduction)
 - [Requirements](#requirements)
-    - [Hardware](#hardware)
-        - [LoRa Concentrators](#lora-concentrators)
-    - [Software](#software)
+  - [Hardware](#hardware)
+    - [LoRa Concentrators](#lora-concentrators)
+  - [Software](#software)
 - [Installing docker & docker compose on the OS](#installing-docker--docker-compose-on-the-os)
 - [Deploy the code](#deploy-the-code)
-    - [Via docker-compose](#via-docker-compose)
-    - [Build the image not required](#build-the-image-not-required)
-    - [Via Balena Deploy](#via-balena-deploy)
-    - [Via Balena-CLI](#via-balena-cli)
+  - [Via docker-compose](#via-docker-compose)
+  - [Build the image not required](#build-the-image-not-required)
+  - [Via Balena Deploy](#via-balena-deploy)
+  - [Via Balena-CLI](#via-balena-cli)
 - [Configure the Gateway](#configure-the-gateway)
-    - [Basics™ Station Service Variables](#basics-station-service-variables)
-    - [Define your MODEL & DESIGN](#define-your-model--design)
-    - [Get the EUI of the Gateway](#get-the-eui-of-the-gateway)
-    - [CUPS and LNS protocols](#cups-and-lns-protocols)
-    - [Configure your gateway with The Things Stack CE TTNv3](#configure-your-gateway-with-the-things-stack-ce-ttnv3)
-    - [Autoprovision your gateway on TTN or TTI](#autoprovision-your-gateway-on-ttn-or-tti)
-    - [Configure your gateway with ChirpStack v4](#configure-your-gateway-with-chirpstack-v4)
-    - [Configure your gateway with Actility ThingPark Community](#configure-your-gateway-with-actility-thingpark-community)
-    - [Configure your gateway with AWS LNS](#configure-your-gateway-with-aws-lns)
-    - [Advanced configuration](#advanced-configuration)
-    - [Running with less privileges](#running-with-less-privileges)
-    - [Auto-discover](#auto-discover)
-    - [Find the concentrator](#find-the-concentrator)
-    - [Raspberry Pi 5](#raspberry-pi-5)
-    - [Whitelisting](#whitelisting)
+  - [Basics™ Station Service Variables](#basics-station-service-variables)
+  - [Define your MODEL & DESIGN](#define-your-model--design)
+  - [Get the EUI of the Gateway](#get-the-eui-of-the-gateway)
+  - [CUPS and LNS protocols](#cups-and-lns-protocols)
+  - [Configure your gateway with The Things Stack CE TTNv3](#configure-your-gateway-with-the-things-stack-ce-ttnv3)
+  - [Autoprovision your gateway on TTN or TTI](#autoprovision-your-gateway-on-ttn-or-tti)
+  - [Configure your gateway with ChirpStack v4](#configure-your-gateway-with-chirpstack-v4)
+  - [Configure your gateway with Actility ThingPark Community](#configure-your-gateway-with-actility-thingpark-community)
+  - [Configure your gateway with AWS LNS](#configure-your-gateway-with-aws-lns)
+  - [Advanced configuration](#advanced-configuration)
+  - [Running with less privileges](#running-with-less-privileges)
+  - [Auto-discover](#auto-discover)
+  - [Find the concentrator](#find-the-concentrator)
+  - [Raspberry Pi 5](#raspberry-pi-5)
+  - [Whitelisting](#whitelisting)
 - [Troubleshoothing](#troubleshoothing)
-    - [Connect to a concentrator remotely](#connect-to-a-concentrator-remotely)
+  - [Connect to a concentrator remotely](#connect-to-a-concentrator-remotely)
 - [Parsers](#parsers)
 - [Attribution](#attribution)
 - [License](#license)
@@ -45,15 +45,15 @@ reliable and secure communication between the gateways and the cloud and it is b
 
 Main features:
 
-* Support for AMD64 (x86_64), ARMv8 and ARMv7 architectures.
-* Support for SX1301 SPI concentrators.
-* Support for SX1302 and SX1303 SPI and USB (CoreCell) concentrators.
-* Support for SX1308 SPI and SX1308 USB (PicoCell) concentrators.
-* Support for multiple concentrators on the same device (using one Basics™ Station for Docker service).
-* Compatible with The Things Stack (Comunity Edition / TTNv3) or Chirpstack LNS amongst others.
-* CUPS & LNS protocol configuration supported
-* Gateway autoprovision for TTS servers (TTI or TTN)
-* Almost one click deploy with auto-discover features and at the same time highly configurable.
+- Support for AMD64 (x86_64), ARMv8 and ARMv7 architectures.
+- Support for SX1301 SPI concentrators.
+- Support for SX1302 and SX1303 SPI and USB (CoreCell) concentrators.
+- Support for SX1308 SPI and SX1308 USB (PicoCell) concentrators.
+- Support for multiple concentrators on the same device (using one Basics™ Station for Docker service).
+- Compatible with The Things Stack (Comunity Edition / TTNv3) or Chirpstack LNS amongst others.
+- CUPS & LNS protocol configuration supported
+- Gateway autoprovision for TTS servers (TTI or TTN)
+- Almost one click deploy with auto-discover features and at the same time highly configurable.
 
 Based on Semtech's [Basics™ Station](https://github.com/lorabasics/basicstation/) code.
 
@@ -67,9 +67,9 @@ This project has been tested with The Things Stack Community Edition (TTSCE or T
 
 As long as the host can run docker containers, the Basics™ Station for Docker service can run on:
 
-* AMD64: most PCs out there
-* ARMv8: Raspberry Pi 3/4/5, 400, Compute Module 3/4, Zero 2 W,...
-* ARMv7: Raspberry Pi 2,...
+- AMD64: most PCs out there
+- ARMv8: Raspberry Pi 3/4/5, 400, Compute Module 3/4, Zero 2 W,...
+- ARMv7: Raspberry Pi 2,...
 
 > **NOTE**: you will need an OS in the host machine, for some SBC like a Raspberry Pi that means and SD card with an OS (like Rasperry Pi OS) flashed on it.
 
@@ -77,26 +77,26 @@ As long as the host can run docker containers, the Basics™ Station for Docker 
 
 Tested LoRa concentrators:
 
-* SX1301 (only SPI)
-    * [RAK831 Concentrator](https://store.rakwireless.com/products/rak831-gateway-module)
-    * [RAK833 Concentrator](https://store.rakwireless.com/products/rak833-gateway-module)
-    * [RAK2245 Pi Hat](https://store.rakwireless.com/products/rak2245-pi-hat)
-    * [RAK2247 Concentrator](https://store.rakwireless.com/products/rak2247-lpwan-gateway-concentrator-module)
-    * [IMST iC880a Concentrator](https://shop.imst.de/wireless-modules/lora-products/8/ic880a-spi-lorawan-concentrator-868-mhz)
-    * [Dragino PG1301](https://www.dragino.com/products/lora/item/149-lora-gps-hat.html)
-* SX1302 (SPI or USB)
-    * [RAK2287 Concentrator](https://store.rakwireless.com/products/rak2287-lpwan-gateway-concentrator-module)
-    * [Seeed WM1302 Concentrator](https://www.seeedstudio.com/WM1302-LoRaWAN-Gateway-Module-SPI-EU868-p-4889.html)
-    * [Dragino PG1302 Concentrator](https://www.dragino.com/products/lora/item/223-pg1302.html)
-    * [Elecrow LR1302 Concentrator](https://www.elecrow.com/lr1302-lorawan-gateway-module-spi-eu868-sx1302-long-range-gateway-module-support-8-channels.html)
-* SX1303 (SPI or USB)
-    * [RAK5146 Concentrator](https://store.rakwireless.com/collections/wislink-lpwan/products/wislink-lpwan-concentrator-rak5146)
-    * [RAK5166 Concentrator](https://store.rakwireless.com/products/rak5166-rak5167-concentrator-card-m-2-form-factor-innovation-for-lorawan-applications-sx1303-lora-core-usb-gps-lbt)
-    * [RAK5167 Concentrator](https://store.rakwireless.com/products/rak5166-rak5167-concentrator-card-m-2-form-factor-innovation-for-lorawan-applications-sx1303-lora-core-usb-gps-lbt)
-* SX1308 (SPI or USB)
-    * [RAK2246 Concentrator](https://store.rakwireless.com/collections/wisgate-developer/products/rak7246-lpwan-developer-gateway)
-    * [RAK2247-1308 Concentrator](https://store.rakwireless.com/products/rak2287-lpwan-gateway-concentrator-module)
-    * [MikroTik R11e-LoRa8 Concentrator](https://mikrotik.com/product/r11e_lr8)
+- SX1301 (only SPI)
+  - [RAK831 Concentrator](https://store.rakwireless.com/products/rak831-gateway-module)
+  - [RAK833 Concentrator](https://store.rakwireless.com/products/rak833-gateway-module)
+  - [RAK2245 Pi Hat](https://store.rakwireless.com/products/rak2245-pi-hat)
+  - [RAK2247 Concentrator](https://store.rakwireless.com/products/rak2247-lpwan-gateway-concentrator-module)
+  - [IMST iC880a Concentrator](https://shop.imst.de/wireless-modules/lora-products/8/ic880a-spi-lorawan-concentrator-868-mhz)
+  - [Dragino PG1301](https://www.dragino.com/products/lora/item/149-lora-gps-hat.html)
+- SX1302 (SPI or USB)
+  - [RAK2287 Concentrator](https://store.rakwireless.com/products/rak2287-lpwan-gateway-concentrator-module)
+  - [Seeed WM1302 Concentrator](https://www.seeedstudio.com/WM1302-LoRaWAN-Gateway-Module-SPI-EU868-p-4889.html)
+  - [Dragino PG1302 Concentrator](https://www.dragino.com/products/lora/item/223-pg1302.html)
+  - [Elecrow LR1302 Concentrator](https://www.elecrow.com/lr1302-lorawan-gateway-module-spi-eu868-sx1302-long-range-gateway-module-support-8-channels.html)
+- SX1303 (SPI or USB)
+  - [RAK5146 Concentrator](https://store.rakwireless.com/collections/wislink-lpwan/products/wislink-lpwan-concentrator-rak5146)
+  - [RAK5166 Concentrator](https://store.rakwireless.com/products/rak5166-rak5167-concentrator-card-m-2-form-factor-innovation-for-lorawan-applications-sx1303-lora-core-usb-gps-lbt)
+  - [RAK5167 Concentrator](https://store.rakwireless.com/products/rak5166-rak5167-concentrator-card-m-2-form-factor-innovation-for-lorawan-applications-sx1303-lora-core-usb-gps-lbt)
+- SX1308 (SPI or USB)
+  - [RAK2246 Concentrator](https://store.rakwireless.com/collections/wisgate-developer/products/rak7246-lpwan-developer-gateway)
+  - [RAK2247-1308 Concentrator](https://store.rakwireless.com/products/rak2287-lpwan-gateway-concentrator-module)
+  - [MikroTik R11e-LoRa8 Concentrator](https://mikrotik.com/product/r11e_lr8)
 
 > **NOTE**: Other concentrators might also work. If you manage to make this work with a different setup, report back :)
 
@@ -109,17 +109,17 @@ Tested LoRa concentrators:
 
 If you are going to use docker to deploy the project, you will need:
 
-* An OS running your host (Linux or MacOS for AMD64 systems, Raspberry Pi OS, Ubuntu OS for ARM,...)
-* Docker (and optionally docker-compose) on the machine (see below for installation instructions)
+- An OS running your host (Linux or MacOS for AMD64 systems, Raspberry Pi OS, Ubuntu OS for ARM,...)
+- Docker (and optionally docker-compose) on the machine (see below for installation instructions)
 
 If you are going to use this image with Balena, you will need:
 
-* A balenaCloud account ([sign up here](https://dashboard.balena-cloud.com/))
+- A balenaCloud account ([sign up here](https://dashboard.balena-cloud.com/))
 
 On both cases you will also need:
 
-* A The Things Stack V3 account [here](https://console.cloud.thethings.network/)
-* [balenaEtcher](https://balena.io/etcher) to burn the OS image on the SD card of eMMC for SBC if you have not already done so
+- A The Things Stack V3 account [here](https://console.cloud.thethings.network/)
+- [balenaEtcher](https://balena.io/etcher) to burn the OS image on the SD card of eMMC for SBC if you have not already done so
 
 Once all of this is ready, you are able to deploy this repository following instructions below.
 
@@ -216,7 +216,7 @@ The included build script in the root folder can be user to build all architectu
 `https://hub.docker.com/r/xoseperez/basicstation` which you don't have permissions to push to (obviously), but you can easily push the images to your own repo by doing:
 
 ```
-REGISTRY="ssenchyn/basicstation" ./build.sh --push
+REGISTRY="registry.gitlab.com/steffen.senchyna/eth-basicstation" ./build.sh --push
 ```
 
 ### Via [Balena Deploy](https://www.balena.io/docs/learn/deploy/deploy-with-balena-button/)
@@ -244,61 +244,61 @@ If you are a balena CLI expert, feel free to use balena CLI.
 These variables you can set them under the `environment` tag in the `docker-compose.yml` file or using an environment file (with the `env_file` tag). If you are using Balena you can also set them in
 the `Device Variables` tab for the device (or globally for the whole application). Only `MODEL` and `TC_KEY` are mandatory.
 
- Variable Name                        | Value                          | Description                                                                                                                                   | Default                                                                                                                                                  
---------------------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------
- **`MODEL`**                          | `STRING`                       | Concentrator model (see `Define your MODEL` section below) or `AUTO`                                                                          | If undefined or `AUTO` it will trigger auto-discover                                                                                                     
- **`INTERFACE`**                      | `SPI`, `USB`, `NET` or `AUTO`  | Concentrator interface. Set to `AUTO` to use with auto-discover feature.                                                                      | If `MODEL` is defined it will get the interface type from it if possible, defaults to `AUTO` if the auto-discover feature is enabled or `SPI` otherwise. 
- **`DESIGN`**                         | `V2`, `PICOCELL` or `CORECELL` | Concentrator design version                                                                                                                   | A fair guess will be done based on `MODEL` and `INTERFACE`                                                                                               
- **`DEVICE`**                         | `STRING` or `AUTO`             | Where the concentrator is connected to. Set to `AUTO` for auto-discover.                                                                      | `/dev/spidev0.0` for SPI concentrators, `/dev/ttyUSB0` or `/dev/ttyACM0` for USB concentrators, the host IP port 3333 for `NET` connections              
- **`SPI_SPEED`**                      | `INT`                          | Speed of the SPI interface                                                                                                                    | 2000000 (2MHz) for SX1301 concentrators, 8000000 (8Mhz) for the rest                                                                                     
- **`CLKSRC`**                         | `INT`                          | Radio index that provides clock to concentrator                                                                                               | 1 for SX1301 concentradors, 0 for the rest                                                                                                               
- **`USE_LIBGPIOD`**                   | `INT`                          | Use `libgpiod` (1) instead of default `sysfs` (0) to manage the GPIOs. The former is the recommended but not yet supported on all platforms.  | 0 (1 for Raspberry Pi 5)                                                                                                                                 
- **`GPIO_CHIP`**                      | `STRING`                       | GPIO ID to use when using libgpiod                                                                                                            | `gpiochip0` (`gpiochip4` for Raspberry Pi 5)                                                                                                             
- **`RESET_GPIO`**                     | `INT`                          | GPIO number that resets (Broadcom pin number, if not defined it's calculated based on the `RESET_PIN`)                                        | 17                                                                                                                                                       
- **`POWER_EN_GPIO`**                  | `INT`                          | GPIO number that enables power (by pulling HIGH) to the concentrator (Broadcom pin number). 0 means no required.                              | 0                                                                                                                                                        
- **`POWER_EN_LOGIC`**                 | `INT`                          | If `POWER_EN_GPIO` is not 0, the corresponding GPIO will be set to this value                                                                 | 1                                                                                                                                                        
- **`GATEWAY_EUI`**                    | `STRING`                       | Gateway EUI to use                                                                                                                            | Autogenerated from `GATEWAY_EUI_NIC` if defined, otherwise in order from: `eth0`, `wlan0`, `usb0`                                                        
- **`GATEWAY_EUI_SOURCE`**             | `STRING`                       | Source to use when generating the EUI when `GATEWAY_EUI` is not defined. Set to `chip` for SX1302/3 chips to get the EUI from the radio chip. | `eth0`                                                                                                                                                   
- **`HAS_GPS`**                        | 0 or 1                         | Set to 0 to disable onbard GPS                                                                                                                | `0`, if `GPS_DEV` is defined and exists it will be set to `1` by default                                                                                 
- **`GPS_DEV`**                        | `STRING`                       | Where the GPS is connected to. Don't set it if you don't know what this means                                                                 | `/dev/ttyAMA0` or `/dev/i2c-1` for known models                                                                                                          
- **`TTS_REGION`**                     | `STRING`                       | Region of the TTNv3 server to use                                                                                                             | ```eu1```                                                                                                                                                
- **`TTS_TENANT`**                     | `STRING`                       | Tenant you are using (only if using TTI)                                                                                                      | (empty)                                                                                                                                                  
- **`SERVER`**                         | `STRING`                       | Host machine that hosts the LNS                                                                                                               | Automatically created based on `TTS_REGION` for TTN or `TTS_TENANT` and `TTS_REGION` for TTI                                                             
- **`TLS_SNI`**                        | `true` or `false`              | Server name indication (SNI) check                                                                                                            | `true`                                                                                                                                                   
- **`TC_URI`**                         | `STRING`                       | LoRaWAN Network Server to connect to                                                                                                          | Automatically created based on `SERVER`                                                                                                                  
- **`TC_TRUST`**                       | `STRING`                       | CA certificate for the server                                                                                                                 | Precached certificate                                                                                                                                    
- **`TC_CRT`**                         | `STRING`                       | Client certificate (only if required by the server)                                                                                           |
- **`TC_KEY`**                         | `STRING`                       | Unique gateway key or client key used to connect to the LNS                                                                                   |
- **`USE_CUPS`**                       | 0 or 1                         | Set to 1 to force CUPS even without a CUPS_KEY variable or cups.key file                                                                      | 0                                                                                                                                                        
- **`CUPS_URI`**                       | `STRING`                       | CUPS Server to connect to                                                                                                                     | Automatically created based on `SERVER`                                                                                                                  
- **`CUPS_TRUST`**                     | `STRING`                       | CA certificate for the CUPS server                                                                                                            | Precached certificate                                                                                                                                    
- **`CUPS_CRT`**                       | `STRING`                       | Client certificate (only if required by the server)                                                                                           |
- **`CUPS_KEY`**                       | `STRING`                       | Unique gateway key or client key used to connect to the CUPS server                                                                           |
- **`GATEWAY_PREFIX`**                 | `STRING`                       | Prefix to autogenerate GATEWAY_ID for TTS/TTI/TTN autoprovision                                                                               | `eui`                                                                                                                                                    
- **`GATEWAY_ID`**                     | `STRING`                       | ID to use when autoprovisioning the gateway on TTS/TTI/TTN                                                                                    | `GATEWAY_PREFIX` + `-` + `GATEWAY_EUI`                                                                                                                   
- **`GATEWAY_NAME`**                   | `STRING`                       | Name to use when autoprovisioning the gateway on TTS/TTI/TTN                                                                                  | `GATEWAY_ID`                                                                                                                                             
- **`DISABLE_CLEAR_CHANNEL_ANALYSIS`** | 0 or 1                         | Set to 1 to disable clear-channel analysis (LBT)                                                                                              | 0                                                                                                                                                        
- **`DISABLE_DUTY_CYCLE_CHECK`**       | 0 or 1                         | Set to 1 to disable duty cycle check                                                                                                          | 0                                                                                                                                                        
- **`DISABLE_DWELL_TIME_LIMITS`**      | 0 or 1                         | Set to 1 to disable dwell-time limitations                                                                                                    | 0                                                                                                                                                        
- **`TTS_USERNAME`**                   | `STRING`                       | Name of your user on the TTS instance you want to register the gateway                                                                        | Paste your username                                                                                                                                      
- **`TTS_PERSONAL_KEY`**               | `STRING`                       | Unique key to create the gateway and its key                                                                                                  | Paste personal API key from your TTS instance (check section about autoprovision below)                                                                  
- **`TTS_FREQUENCY_PLAN_ID`**          | `STRING`                       | The Things Stack frequency plan (https://www.thethingsindustries.com/docs/reference/frequency-plans/)                                         | "EU_863_870_TTN"                                                                                                                                         
- **`GW_RESET_PIN`**                   | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
- **`RESET_PIN`**                      | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
- **`LORAGW_SPI`**                     | **Deprecated**                 | Use DEVICE instead                                                                                                                            |
- **`WHITELIST_NETIDS`**               | `STRING`                       | List of NetIDs to whitelist, filters uplinks                                                                                                  | *empty*                                                                                                                                                  
- **`WHITELIST_OUIS`**                 | `STRING`                       | List of OUIs to whitelist, filters join requests                                                                                              | *empty*                                                                                                                                                  
- **`TTN_REGION`**                     | **Deprecated**                 | Use TTS_REGION instead                                                                                                                        |
- **`GATEWAY_EUI_NIC`**                | **Deprecated**                 | Use GATEWAY_EUI_SOURCE instead                                                                                                                |
- **`GW_RESET_GPIO`**                  | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
- **`GW_POWER_EN_GPIO`**               | **Deprecated**                 | Use POWER_EN_GPIO instead                                                                                                                     |
- **`GW_POWER_EN_LOGIC`**              | **Deprecated**                 | Use POWER_EN_LOGIC instead                                                                                                                    |
+| Variable Name                        | Value                          | Description                                                                                                                                   | Default                                                                                                                                                  |
+| ------------------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`MODEL`**                          | `STRING`                       | Concentrator model (see `Define your MODEL` section below) or `AUTO`                                                                          | If undefined or `AUTO` it will trigger auto-discover                                                                                                     |
+| **`INTERFACE`**                      | `SPI`, `USB`, `NET` or `AUTO`  | Concentrator interface. Set to `AUTO` to use with auto-discover feature.                                                                      | If `MODEL` is defined it will get the interface type from it if possible, defaults to `AUTO` if the auto-discover feature is enabled or `SPI` otherwise. |
+| **`DESIGN`**                         | `V2`, `PICOCELL` or `CORECELL` | Concentrator design version                                                                                                                   | A fair guess will be done based on `MODEL` and `INTERFACE`                                                                                               |
+| **`DEVICE`**                         | `STRING` or `AUTO`             | Where the concentrator is connected to. Set to `AUTO` for auto-discover.                                                                      | `/dev/spidev0.0` for SPI concentrators, `/dev/ttyUSB0` or `/dev/ttyACM0` for USB concentrators, the host IP port 3333 for `NET` connections              |
+| **`SPI_SPEED`**                      | `INT`                          | Speed of the SPI interface                                                                                                                    | 2000000 (2MHz) for SX1301 concentrators, 8000000 (8Mhz) for the rest                                                                                     |
+| **`CLKSRC`**                         | `INT`                          | Radio index that provides clock to concentrator                                                                                               | 1 for SX1301 concentradors, 0 for the rest                                                                                                               |
+| **`USE_LIBGPIOD`**                   | `INT`                          | Use `libgpiod` (1) instead of default `sysfs` (0) to manage the GPIOs. The former is the recommended but not yet supported on all platforms.  | 0 (1 for Raspberry Pi 5)                                                                                                                                 |
+| **`GPIO_CHIP`**                      | `STRING`                       | GPIO ID to use when using libgpiod                                                                                                            | `gpiochip0` (`gpiochip4` for Raspberry Pi 5)                                                                                                             |
+| **`RESET_GPIO`**                     | `INT`                          | GPIO number that resets (Broadcom pin number, if not defined it's calculated based on the `RESET_PIN`)                                        | 17                                                                                                                                                       |
+| **`POWER_EN_GPIO`**                  | `INT`                          | GPIO number that enables power (by pulling HIGH) to the concentrator (Broadcom pin number). 0 means no required.                              | 0                                                                                                                                                        |
+| **`POWER_EN_LOGIC`**                 | `INT`                          | If `POWER_EN_GPIO` is not 0, the corresponding GPIO will be set to this value                                                                 | 1                                                                                                                                                        |
+| **`GATEWAY_EUI`**                    | `STRING`                       | Gateway EUI to use                                                                                                                            | Autogenerated from `GATEWAY_EUI_NIC` if defined, otherwise in order from: `eth0`, `wlan0`, `usb0`                                                        |
+| **`GATEWAY_EUI_SOURCE`**             | `STRING`                       | Source to use when generating the EUI when `GATEWAY_EUI` is not defined. Set to `chip` for SX1302/3 chips to get the EUI from the radio chip. | `eth0`                                                                                                                                                   |
+| **`HAS_GPS`**                        | 0 or 1                         | Set to 0 to disable onbard GPS                                                                                                                | `0`, if `GPS_DEV` is defined and exists it will be set to `1` by default                                                                                 |
+| **`GPS_DEV`**                        | `STRING`                       | Where the GPS is connected to. Don't set it if you don't know what this means                                                                 | `/dev/ttyAMA0` or `/dev/i2c-1` for known models                                                                                                          |
+| **`TTS_REGION`**                     | `STRING`                       | Region of the TTNv3 server to use                                                                                                             | `eu1`                                                                                                                                                    |
+| **`TTS_TENANT`**                     | `STRING`                       | Tenant you are using (only if using TTI)                                                                                                      | (empty)                                                                                                                                                  |
+| **`SERVER`**                         | `STRING`                       | Host machine that hosts the LNS                                                                                                               | Automatically created based on `TTS_REGION` for TTN or `TTS_TENANT` and `TTS_REGION` for TTI                                                             |
+| **`TLS_SNI`**                        | `true` or `false`              | Server name indication (SNI) check                                                                                                            | `true`                                                                                                                                                   |
+| **`TC_URI`**                         | `STRING`                       | LoRaWAN Network Server to connect to                                                                                                          | Automatically created based on `SERVER`                                                                                                                  |
+| **`TC_TRUST`**                       | `STRING`                       | CA certificate for the server                                                                                                                 | Precached certificate                                                                                                                                    |
+| **`TC_CRT`**                         | `STRING`                       | Client certificate (only if required by the server)                                                                                           |
+| **`TC_KEY`**                         | `STRING`                       | Unique gateway key or client key used to connect to the LNS                                                                                   |
+| **`USE_CUPS`**                       | 0 or 1                         | Set to 1 to force CUPS even without a CUPS_KEY variable or cups.key file                                                                      | 0                                                                                                                                                        |
+| **`CUPS_URI`**                       | `STRING`                       | CUPS Server to connect to                                                                                                                     | Automatically created based on `SERVER`                                                                                                                  |
+| **`CUPS_TRUST`**                     | `STRING`                       | CA certificate for the CUPS server                                                                                                            | Precached certificate                                                                                                                                    |
+| **`CUPS_CRT`**                       | `STRING`                       | Client certificate (only if required by the server)                                                                                           |
+| **`CUPS_KEY`**                       | `STRING`                       | Unique gateway key or client key used to connect to the CUPS server                                                                           |
+| **`GATEWAY_PREFIX`**                 | `STRING`                       | Prefix to autogenerate GATEWAY_ID for TTS/TTI/TTN autoprovision                                                                               | `eui`                                                                                                                                                    |
+| **`GATEWAY_ID`**                     | `STRING`                       | ID to use when autoprovisioning the gateway on TTS/TTI/TTN                                                                                    | `GATEWAY_PREFIX` + `-` + `GATEWAY_EUI`                                                                                                                   |
+| **`GATEWAY_NAME`**                   | `STRING`                       | Name to use when autoprovisioning the gateway on TTS/TTI/TTN                                                                                  | `GATEWAY_ID`                                                                                                                                             |
+| **`DISABLE_CLEAR_CHANNEL_ANALYSIS`** | 0 or 1                         | Set to 1 to disable clear-channel analysis (LBT)                                                                                              | 0                                                                                                                                                        |
+| **`DISABLE_DUTY_CYCLE_CHECK`**       | 0 or 1                         | Set to 1 to disable duty cycle check                                                                                                          | 0                                                                                                                                                        |
+| **`DISABLE_DWELL_TIME_LIMITS`**      | 0 or 1                         | Set to 1 to disable dwell-time limitations                                                                                                    | 0                                                                                                                                                        |
+| **`TTS_USERNAME`**                   | `STRING`                       | Name of your user on the TTS instance you want to register the gateway                                                                        | Paste your username                                                                                                                                      |
+| **`TTS_PERSONAL_KEY`**               | `STRING`                       | Unique key to create the gateway and its key                                                                                                  | Paste personal API key from your TTS instance (check section about autoprovision below)                                                                  |
+| **`TTS_FREQUENCY_PLAN_ID`**          | `STRING`                       | The Things Stack frequency plan (https://www.thethingsindustries.com/docs/reference/frequency-plans/)                                         | "EU_863_870_TTN"                                                                                                                                         |
+| **`GW_RESET_PIN`**                   | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
+| **`RESET_PIN`**                      | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
+| **`LORAGW_SPI`**                     | **Deprecated**                 | Use DEVICE instead                                                                                                                            |
+| **`WHITELIST_NETIDS`**               | `STRING`                       | List of NetIDs to whitelist, filters uplinks                                                                                                  | _empty_                                                                                                                                                  |
+| **`WHITELIST_OUIS`**                 | `STRING`                       | List of OUIs to whitelist, filters join requests                                                                                              | _empty_                                                                                                                                                  |
+| **`TTN_REGION`**                     | **Deprecated**                 | Use TTS_REGION instead                                                                                                                        |
+| **`GATEWAY_EUI_NIC`**                | **Deprecated**                 | Use GATEWAY_EUI_SOURCE instead                                                                                                                |
+| **`GW_RESET_GPIO`**                  | **Deprecated**                 | Use RESET_GPIO instead                                                                                                                        |
+| **`GW_POWER_EN_GPIO`**               | **Deprecated**                 | Use POWER_EN_GPIO instead                                                                                                                     |
+| **`GW_POWER_EN_LOGIC`**              | **Deprecated**                 | Use POWER_EN_LOGIC instead                                                                                                                    |
 
 > No device-related setting is mandatory but `MODEL` and `DEVICE` must be defined for better performance. The service can auto-discover the concentrator but this feature takes some time on boot to
 > walk through all the possible devices, designs and interfaces. Mind that not all concentrator types support auto-discover, defining a `MODEL` and `DEVICE` is mandatory for SX1301-concentrators.
 
 > Basics™ Station does require a minimum configuration to connect to the server: URL, CA certificate, client certificate and or client key, either for LNS or CUPS protocols. These are set with the
-`TC_*` and `CUPS_*` variables. Check the examples below.
+> `TC_*` and `CUPS_*` variables. Check the examples below.
 
 > When using CUPS (setting `USE_CUPS` to 1 or defining the `CUPS_KEY` variable), LNS configuration is retrieved from the CUPS server, so you don't have to set the `TC_*` variables.
 
@@ -311,18 +311,18 @@ the `Device Variables` tab for the device (or globally for the whole application
 The model is defined depending on the version of the LoRa concentrator chip: `SX1301`, `SX1302`, `SX1303` or `SX1308`. You can also use the concentrator module name or even the gateway model (for
 RAKwireless gateways). Actual list of valid values:
 
-* Semtech chip model: SX1301, SX1302, SX1303, SX1308
-* Concentrator modules: IC880A, R11E-LORA8, R11E-LORA9, RAK2245, RAK2246, RAK2247, RAK2287, RAK5146, RAK831, RAK833, WM1302
-* RAK WisGate Development gateways: RAK7243, RAK7243C, RAK7244, RAK7244C, RAK7246, RAK7248, RAK7248C, RAK7271, RAK7371
+- Semtech chip model: SX1301, SX1302, SX1303, SX1308
+- Concentrator modules: IC880A, R11E-LORA8, R11E-LORA9, RAK2245, RAK2246, RAK2247, RAK2287, RAK5146, RAK831, RAK833, WM1302
+- RAK WisGate Development gateways: RAK7243, RAK7243C, RAK7244, RAK7244C, RAK7246, RAK7248, RAK7248C, RAK7271, RAK7371
 
 If the module is not on the list check the manufacturer to see which one to use. It's important to set the `MODEL` variable (in you `docker-compose.yml` file or in balenaCloud) to the correct one. The
 default model is the `SX1301`.
 
 Based on the `MODEL` and the `INTERFACE` (SPI or USB), the service will try to guess the concentrator design (see https://doc.sm.tc/station).
 
-* V2 design is used with SX1301 and SX1308 concentrators with SPI interface.
-* PicoCell design defines SX1308-based concentrators with USB interface.
-* CoreCell design is in use with SX1302 and SX1303 concentrators, both SPI and USB interface.
+- V2 design is used with SX1301 and SX1308 concentrators with SPI interface.
+- PicoCell design defines SX1308-based concentrators with USB interface.
+- CoreCell design is in use with SX1302 and SX1303 concentrators, both SPI and USB interface.
 
 ### Get the EUI of the Gateway
 
@@ -346,7 +346,7 @@ Or query what will the EUI be using the chip ID (only for Corecell concentrators
 docker run -it --privileged --rm -e GATEWAY_EUI_SOURCE=chip xoseperez/basicstation:latest gateway_eui
 ```
 
-If using balenaCloud the ```EUI``` will be visible as a TAG on the device dashboard. Be careful when you copy the tag, as other characters will be copied.
+If using balenaCloud the `EUI` will be visible as a TAG on the device dashboard. Be careful when you copy the tag, as other characters will be copied.
 
 ### CUPS and LNS protocols
 
@@ -370,43 +370,41 @@ You will also have to configure the gateway in The Things Stack CE (also known a
 
 1. Create a gateway
 
-    * Sign up at [The Things Stack console](https://console.cloud.thethings.network/) using the cluster closest to your gateway location.
-    * Click **Go to Gateways** icon.
-    * Click the **Add gateway** button on the top right.
-    * Introduce the data for the gateway.
-    * Paste the EUI of the gateway (see `Get the EUI of the Gateway` section above).
-    * Complete the form and click Register gateway.
-
+   - Sign up at [The Things Stack console](https://console.cloud.thethings.network/) using the cluster closest to your gateway location.
+   - Click **Go to Gateways** icon.
+   - Click the **Add gateway** button on the top right.
+   - Introduce the data for the gateway.
+   - Paste the EUI of the gateway (see `Get the EUI of the Gateway` section above).
+   - Complete the form and click Register gateway.
 
 2. Create an API key to exchange data
 
-    * Under the gateway page, select the **API keys** menu on the left.
-    * Click **Add API key** button.
-    * Select **Grant individual rights** and then check these rights:
-        * Link as Gateway to a Gateway Server for traffic exchange ...
-    * Click **Create API key**.
-    * Copy the created API key.
-    * If you are using the LNS protocol, then paste this API key to the `TC_KEY` variable in your `docker-compose.yml` file or on balenaCloud.
-
+   - Under the gateway page, select the **API keys** menu on the left.
+   - Click **Add API key** button.
+   - Select **Grant individual rights** and then check these rights:
+     - Link as Gateway to a Gateway Server for traffic exchange ...
+   - Click **Create API key**.
+   - Copy the created API key.
+   - If you are using the LNS protocol, then paste this API key to the `TC_KEY` variable in your `docker-compose.yml` file or on balenaCloud.
 
 3. Create an API key for the CUPS protocol (only if using CUPS protocol)
 
-    * Under the gateway page, select the **General settings** menu on the left.
-    * Paste the key created on the previous step to the **LoRa Basics™ Station LNS Authentication Key** field.
-    * Now, go back to create a new key by selecting the **API keys** menu on the left again.
-    * Click **Add API key** button.
-    * Select **Grant individual rights** and then check these rights:
-        * View gateway information
-        * Retrieve secrets associated to the gateway
-        * Edit basic gateway settings
-    * Click **Create API key**.
-    * Copy the created API key.
-    * Paste this API key to the `CUPS_KEY` variable in your `docker-compose.yml` file or on balenaCloud.
+   - Under the gateway page, select the **General settings** menu on the left.
+   - Paste the key created on the previous step to the **LoRa Basics™ Station LNS Authentication Key** field.
+   - Now, go back to create a new key by selecting the **API keys** menu on the left again.
+   - Click **Add API key** button.
+   - Select **Grant individual rights** and then check these rights:
+     - View gateway information
+     - Retrieve secrets associated to the gateway
+     - Edit basic gateway settings
+   - Click **Create API key**.
+   - Copy the created API key.
+   - Paste this API key to the `CUPS_KEY` variable in your `docker-compose.yml` file or on balenaCloud.
 
 More information on these pages:
 
-* https://www.thethingsindustries.com/docs/gateways/lora-basics-station/lns/
-* https://www.thethingsindustries.com/docs/gateways/lora-basics-station/cups/
+- https://www.thethingsindustries.com/docs/gateways/lora-basics-station/lns/
+- https://www.thethingsindustries.com/docs/gateways/lora-basics-station/cups/
 
 ### Autoprovision your gateway on TTN or TTI
 
@@ -436,10 +434,10 @@ services:
 
 `TTS_PERSONAL_KEY` should be a key with, at least, the following permissions:
 
-* link as Gateway to a Gateway Server for traffic exchange, i.e. write uplink and read downlink
-* view and edit gateway API keys
-* edit basic gateway settings
-* create a gateway under the user account
+- link as Gateway to a Gateway Server for traffic exchange, i.e. write uplink and read downlink
+- view and edit gateway API keys
+- edit basic gateway settings
+- create a gateway under the user account
 
 Remember that when using TTN the `GATEWAY_NAME` and `GATEWAY_ID` must be unique over time (including deleted gateways).
 
@@ -461,7 +459,7 @@ certificate, TLS certificate and TLS key.
 Copy each of the values to the corresponding environment variable in your Basics™ Station for Docker `docker-compose.yml` file. The mapping should be:
 
 | ChirpStack      | Basics™ Station for Docker |
-|-----------------|----------------------------|
+| --------------- | -------------------------- |
 | CA certificate  | TC_TRUST                   |
 | TLS certificate | TC_CRT                     |
 | TLS key         | TC_KEY                     |
@@ -525,7 +523,7 @@ Check the example below.
 Copy each of the values to the corresponding environment variable in your Basics™ Station for Docker `docker-compose.yml` file. The mapping should be:
 
 | AWS LNS                                                                 | Basics™ Station for Docker |
-|-------------------------------------------------------------------------|----------------------------|
+| ----------------------------------------------------------------------- | -------------------------- |
 | The https URL provided in the dashboard                                 | CUPS_URI                   |
 | Contents of the `cups.trust` file                                       | CUPS_TRUST                 |
 | Contents of the `nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn.cert.pem` file    | CUPS_CERT                  |
@@ -539,7 +537,7 @@ version: '2.0'
 services:
 
   basicstation:
-    
+
     image: xoseperez/basicstation:latest
     container_name: basicstation
     restart: unless-stopped
@@ -603,17 +601,17 @@ services:
 Then bring up the service and it will populate several config files in this folder. Now you can shut the service down and proceed to edit these files to match your needs. Now, when you bring the
 service up again it will find the pre-created files and it will use them instead of creating new ones. The files you might want to change are:
 
-* `station.conf`: Main configuration file. It does not include frequencies and power since these are retrieved form the LNS. Check https://doc.sm.tc/station/conf.html.
-* `slave-N.conf`: Specific configuration file for each radio. They must exist, even if all settings are inherited from the `station.conf` file. In that case, the slave file will only contain an empty
+- `station.conf`: Main configuration file. It does not include frequencies and power since these are retrieved form the LNS. Check https://doc.sm.tc/station/conf.html.
+- `slave-N.conf`: Specific configuration file for each radio. They must exist, even if all settings are inherited from the `station.conf` file. In that case, the slave file will only contain an empty
   object: `{}`.
-* `tc.uri`: File containing the URL of the LNS.
-* `tc.trust`: File containing the certificate of the LNS server.
-* `tc.cert`: File containing the certificate for the client.
-* `tc.key`: File containing the certificate key of the gateway to connect to the LNS server or the API key.
-* `cups.uri`: File containing the URL of the CUPS.
-* `cups.trust`: File containing the certificate of the CUPS server.
-* `cups.cert`: File containing the certificate for the client.
-* `cups.key`: File containing the client certificate key of the gateway to connect to the CUPS server or the API key.
+- `tc.uri`: File containing the URL of the LNS.
+- `tc.trust`: File containing the certificate of the LNS server.
+- `tc.cert`: File containing the certificate for the client.
+- `tc.key`: File containing the certificate key of the gateway to connect to the LNS server or the API key.
+- `cups.uri`: File containing the URL of the CUPS.
+- `cups.trust`: File containing the certificate of the CUPS server.
+- `cups.cert`: File containing the certificate for the client.
+- `cups.key`: File containing the client certificate key of the gateway to connect to the CUPS server or the API key.
 
 **NOTE**: remember that, when using CUPS, `tc.uri`, `tc.trust` and `tc.key` are retrieved automatically from the CUPS server.
 
@@ -624,14 +622,14 @@ Example slave configuration for a device using 2 radios for antenna divertisy (s
 you don't mix SX1301 with SX1302/3 radios (they use different binaries).
 
 ```
-$ cat config/slave-0.conf 
+$ cat config/slave-0.conf
 {
     "SX1302_conf": {
         "device": "usb:/dev/ttyACM0",
         "pps": true
     }
 }
-$ cat config/slave-1.conf 
+$ cat config/slave-1.conf
 {
     "SX1302_conf": {
         "device": "spi:/dev/spidev0.0",
@@ -709,14 +707,14 @@ secrets:
 
 The service accepts the following secrets **named exactly** as the basicstation configuration files:
 
-* tc.uri
-* tc.trust
-* tc.crt
-* tc.key
-* cups.uri
-* cups.trust
-* cups.crt
-* cups.key
+- tc.uri
+- tc.trust
+- tc.crt
+- tc.key
+- cups.uri
+- cups.trust
+- cups.crt
+- cups.key
 
 ### Auto-discover
 
@@ -728,9 +726,9 @@ section below).
 
 Auto-discovery is triggered in different situations:
 
-* No `MODEL` defined or set to `AUTO`: It will search for a concentrator on all interfaces. Interfaces to check can be narrow by using the `INTERFACE` setting. Also the concentrator type to search for
+- No `MODEL` defined or set to `AUTO`: It will search for a concentrator on all interfaces. Interfaces to check can be narrow by using the `INTERFACE` setting. Also the concentrator type to search for
   can be specified using the `DESIGN` setting (`corecell`, `picocell` or `2g4` are supported).
-* `MODEL` defined but no `DEVICE` or set to `AUTO`:  It will search for the specific concentrator type (based on `MODEL`) on all interfaces. Interfaces to check can be narrow by using the `INTERFACE`
+- `MODEL` defined but no `DEVICE` or set to `AUTO`: It will search for the specific concentrator type (based on `MODEL`) on all interfaces. Interfaces to check can be narrow by using the `INTERFACE`
   setting.
 
 The following example will start a Corecell concentrator (RAK5146 is based on SX1303) on whatever first interface it finds it (SPI or USB).
@@ -801,10 +799,10 @@ docker run --privileged --rm -e SCAN_SPI=0 xoseperez/basicstation find_concentra
 The output will be a list of concentrators with the port they are connected to and the EUI:
 
 ```
-DEVICE             DESIGN             ID           
+DEVICE             DESIGN             ID
 ---------------------------------------------------------
-/dev/spidev0.0     corecell           0016C001FF1E5008   
-/dev/ttyACM0       corecell           0016C001FF1BA2BE 
+/dev/spidev0.0     corecell           0016C001FF1E5008
+/dev/ttyACM0       corecell           0016C001FF1BA2BE
 ```
 
 ### Raspberry Pi 5
@@ -881,10 +879,10 @@ services:
 
 ## Troubleshoothing
 
-* It's possible that on the TTN Console the gateway appears as Not connected if it's not receiving any LoRa message. Sometimes the websockets connection among the LoRa Gateway and the server can get
+- It's possible that on the TTN Console the gateway appears as Not connected if it's not receiving any LoRa message. Sometimes the websockets connection among the LoRa Gateway and the server can get
   broken. However a new LoRa package will re-open the websocket between the Gateway and TTN or TTI.
 
-* The RAK833-SPI/USB concentrator has both interfaces and they are selected using a SPDT switch in the module. Since this is an SX1301-based concentrator only the SPI interface is supported so you
+- The RAK833-SPI/USB concentrator has both interfaces and they are selected using a SPDT switch in the module. Since this is an SX1301-based concentrator only the SPI interface is supported so you
   will have to assert pin 17 in the MiniPCIe gold-finger of the concentrator LOW. This can be done using the `POWER_EN_GPIO` and `POWER_EN_LOGIC` variables. If using
   a [RAK 2247 Pi Hat](https://store.rakwireless.com/collections/wishat/products/rak2247-pi-hat) or [RAK 2287 Pi Hat](https://store.rakwireless.com/collections/wishat/products/rak2287-pi-hat) this pin
   is wired to GPIO20 in the Raspberry Pi. So a working configuration for this concentrator would be:
